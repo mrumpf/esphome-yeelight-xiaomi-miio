@@ -9,3 +9,6 @@ local/*
 !local/.gitkeep
 !local/README.md
 !firmware/
+
+# Firmware images embed the Wi-Fi credentials as plaintext strings.
+*.bin
