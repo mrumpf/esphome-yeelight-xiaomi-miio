@@ -1,0 +1,53 @@
+# ============================================================================
+# WORK IN PROGRESS - not yet opened, not yet flashed
+#
+# Yeelight LED Ceiling Light (YLXD17YL)
+#
+# No upstream project supports this model: it appears in neither syssi's
+# collection nor anywhere else searched. So unlike the other devices here there
+# is no hardware definition to build on, and the pin map has to be established
+# first.
+#
+# What is needed before this can be flashed:
+#   * open the device and identify the ESP module (UART pads, GPIO0 for
+#     download mode)
+#   * dump the stock firmware over UART first - no image for this model is
+#     archived publicly, so that dump is the only way back:
+#       esptool.py --port <port> -b 115200 read_flash 0x0 0x400000 stock.bin
+#   * find the LEDC pins for warm/cold white, any night light or ambient
+#     channel, and the power-supply enable
+#
+# The nearest documented relatives are syssi's ceiling configs under
+# vendor/esphome-yeelight-ceiling-light/ - yeelight_light_ceiling10.yaml is the
+# closest in class. Compare against those once the pin map is known.
+# ============================================================================
+
+substitutions:
+  name: yeelight-led-ceiling-light
+
+packages:
+  common: !include packages/common.yaml
+  local: !include_dir_merge_named local/
+
+esphome:
+  name: ${name}
+  friendly_name: Yeelight LED Ceiling Light
+  comment: "YLXD17YL - pin map not yet established"
+  min_version: 2024.10.0
+
+esp32:
+  board: esp32doit-devkit-v1
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_FREERTOS_UNICORE: y
+    advanced:
+      ignore_efuse_mac_crc: true
+      ignore_efuse_custom_mac: true
+
+api:
+logger:
+  level: INFO
+
+# TODO: outputs and light. Nothing is guessed here on purpose - flashing an
+# invented pin map risks driving the wrong transistor.

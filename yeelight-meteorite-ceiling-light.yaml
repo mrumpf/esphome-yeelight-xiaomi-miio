@@ -1,4 +1,6 @@
-# Yeelight Crystal Pendant Lamp (yeelink.light.ceiling10)
+# Yeelight Meteorite Ceiling Light (YLDL01YL, yeelink.light.ceiling10)
+#
+# Not yet opened or flashed - the device still runs stock firmware.
 substitutions:
   name: yeelight-light-ceiling10
 
