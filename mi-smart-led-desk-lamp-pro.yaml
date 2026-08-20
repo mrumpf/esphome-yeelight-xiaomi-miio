@@ -3,11 +3,11 @@
 # Upstream hardcodes the device name and an OTA password; both are overridden
 # here so the device keeps its name and uses our secret.
 substitutions:
-  name: midesklamppro
+  name: schreibtischlampe-buero
 
 esphome:
-  name: midesklamppro
-  friendly_name: Schreibtischlampe
+  name: schreibtischlampe-buero
+  friendly_name: Schreibtischlampe Büro
 
 packages:
   base: !include vendor/xiaomi-smart-led-desk-lamp-pro-esphome/lamp.yaml

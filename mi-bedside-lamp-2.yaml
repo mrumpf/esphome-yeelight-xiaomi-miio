@@ -4,7 +4,8 @@
 # HAL together with the behaviour that acts on it: power button, colour button,
 # slider, light modes and presets. Built from the local checkout, so no network.
 substitutions:
-  name: bedside-lamp
+  name: nachttischlampe-buero
+  friendly_name: Nachttischlampe Büro
   external_components_source: vendor/esphome-xiaomi_bslamp2/components
 
 packages:

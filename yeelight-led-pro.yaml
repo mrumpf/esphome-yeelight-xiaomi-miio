@@ -1,8 +1,11 @@
 # Yeelight Staria Bedside Lamp Pro (YLCT03YL, yeelink.light.lamp9)
 substitutions:
-  name: yeelight-light-lamp9
+  name: basteltischlampe-buero
 
 packages:
   base: !include vendor/esphome-yeelight-ceiling-light/yeelight_light_lamp9_pro.yaml
   common: !include packages/common.yaml
   local: !include_dir_merge_named local/
+
+esphome:
+  friendly_name: Basteltischlampe Büro

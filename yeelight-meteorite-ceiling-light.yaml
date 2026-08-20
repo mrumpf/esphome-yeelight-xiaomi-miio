@@ -2,9 +2,12 @@
 #
 # Not yet opened or flashed - the device still runs stock firmware.
 substitutions:
-  name: yeelight-light-ceiling10
+  name: esszimmerlampe
 
 packages:
   base: !include vendor/esphome-yeelight-ceiling-light/yeelight_light_ceiling10.yaml
   common: !include packages/common.yaml
   local: !include_dir_merge_named local/
+
+esphome:
+  friendly_name: Esszimmerlampe
