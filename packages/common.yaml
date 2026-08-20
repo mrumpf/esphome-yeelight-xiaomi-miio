@@ -1,8 +1,8 @@
 # House standards applied on top of every device config.
 #
-# This is layered *over* the upstream-shaped example configs, which stay
-# pristine so they remain contributable to syssi/esphome-yeelight-ceiling-light.
-# Values live in secrets.yaml on each machine; only structure is tracked here.
+# Layered over the hardware definitions, which come from the vendor/
+# submodules and are never modified here.
+# Machine-specific values go in local/ (gitignored).
 
 wifi:
   # Without a fallback AP a bad credential can only be fixed over UART,
@@ -12,10 +12,19 @@ wifi:
 
 captive_portal:
 
+# Repository default. Override per machine by dropping a file into local/,
+# which is gitignored - see local/README.md.
+substitutions:
+  ota_password: "secret42"
+
 ota:
   - platform: esphome
-    password: !secret ota_password
+    password: ${ota_password}
 
-api:
-  encryption:
-    key: !secret api_encryption_key
+# API encryption is deliberately NOT enabled by default: switching it on makes
+# Home Assistant drop the device until the key is entered again. To enable it,
+# put the key in local/ (gitignored) and uncomment here:
+#
+# api:
+#   encryption:
+#     key: ${api_encryption_key}

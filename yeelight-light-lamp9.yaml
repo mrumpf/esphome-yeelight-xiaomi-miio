@@ -5,3 +5,4 @@ substitutions:
 packages:
   base: !include vendor/esphome-yeelight-ceiling-light/yeelight_light_lamp9.yaml
   common: !include packages/common.yaml
+  local: !include_dir_merge_named local/

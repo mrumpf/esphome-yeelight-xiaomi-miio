@@ -10,3 +10,4 @@ substitutions:
 packages:
   base: !include packages/hardware/bslamp2.yaml
   common: !include packages/common.yaml
+  local: !include_dir_merge_named local/

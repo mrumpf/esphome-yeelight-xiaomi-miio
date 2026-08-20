@@ -5,3 +5,7 @@ secrets.yaml
 __pycache__/
 *.py[cod]
 .DS_Store
+local/*
+!local/.gitkeep
+!local/README.md
+!firmware/

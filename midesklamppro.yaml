@@ -12,3 +12,4 @@ esphome:
 packages:
   base: !include vendor/xiaomi-smart-led-desk-lamp-pro-esphome/lamp.yaml
   common: !include packages/common.yaml
+  local: !include_dir_merge_named local/
