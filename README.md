@@ -27,7 +27,8 @@ repository would not be possible.
 | `yeelight-led-pro` | `vendor/esphome-yeelight-ceiling-light/yeelight_light_lamp9_pro.yaml` | [syssi](https://github.com/syssi/esphome-yeelight-ceiling-light) | flashed |
 | `mi-bedside-lamp-2` | `vendor/esphome-xiaomi_bslamp2/packages/core.yaml` | [mmakaay](https://github.com/mmakaay/esphome-xiaomi_bslamp2) | flashed |
 | `yeelight-meteorite-ceiling-light` | `vendor/esphome-yeelight-ceiling-light/yeelight_light_ceiling10.yaml` | [syssi](https://github.com/syssi/esphome-yeelight-ceiling-light) | not opened yet |
-| `yeelight-galaxy-ceiling-light` | none — no upstream supports YLXD17YL | — | scaffold, pin map unknown |
+| `yeelight-galaxy-ceiling-light-480` | none — no upstream supports YLXD17YL | — | scaffold, pin map unknown |
+| `yeelight-galaxy-ceiling-light-450` | none — no upstream supports YLXD16YL | — | scaffold, model unconfirmed |
 
 The Bedside Lamp 2 is driven by
 [mmakaay/esphome-xiaomi_bslamp2](https://github.com/mmakaay/esphome-xiaomi_bslamp2)

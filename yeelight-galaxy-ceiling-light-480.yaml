@@ -29,7 +29,7 @@
 # ============================================================================
 
 substitutions:
-  name: yeelight-galaxy-ceiling-light
+  name: yeelight-galaxy-480
 
 packages:
   common: !include packages/common.yaml
@@ -37,7 +37,7 @@ packages:
 
 esphome:
   name: ${name}
-  friendly_name: Yeelight Galaxy Ceiling Light
+  friendly_name: Yeelight Galaxy Ceiling Light 480
   comment: "YLXD17YL, Galaxy 480 - pin map not yet established"
   min_version: 2024.10.0
 
