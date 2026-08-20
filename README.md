@@ -21,22 +21,25 @@ Referencing rather than vendoring also keeps the licences intact: the projects
 below are variously Apache-2.0, GPLv3 and unlicensed, and copying them into one
 repository would not be possible.
 
-| Device | Base config | Upstream |
-| --- | --- | --- |
-| `mi-smart-led-desk-lamp-pro` | `vendor/xiaomi-smart-led-desk-lamp-pro-esphome/lamp.yaml` | [lucasreiners](https://github.com/lucasreiners/xiaomi-smart-led-desk-lamp-pro-esphome) |
-| `yeelight-led-pro` | `vendor/esphome-yeelight-ceiling-light/yeelight_light_lamp9.yaml` | [syssi](https://github.com/syssi/esphome-yeelight-ceiling-light) |
-| `yeelight-light-ceiling10` | `vendor/esphome-yeelight-ceiling-light/yeelight_light_ceiling10.yaml` | [syssi](https://github.com/syssi/esphome-yeelight-ceiling-light) |
-| `mi-bedside-lamp-2` | `packages/hardware/bslamp2.yaml` | own, see below |
+| Device | Base config | Upstream | State |
+| --- | --- | --- | --- |
+| `mi-smart-led-desk-lamp-pro` | `vendor/xiaomi-smart-led-desk-lamp-pro-esphome/lamp.yaml` | [lucasreiners](https://github.com/lucasreiners/xiaomi-smart-led-desk-lamp-pro-esphome) | flashed |
+| `yeelight-led-pro` | `vendor/esphome-yeelight-ceiling-light/yeelight_light_lamp9_pro.yaml` | [syssi](https://github.com/syssi/esphome-yeelight-ceiling-light) | flashed |
+| `mi-bedside-lamp-2` | `vendor/esphome-xiaomi_bslamp2/packages/core.yaml` | [mmakaay](https://github.com/mmakaay/esphome-xiaomi_bslamp2) | flashed |
+| `yeelight-meteorite-ceiling-light` | `vendor/esphome-yeelight-ceiling-light/yeelight_light_ceiling10.yaml` | [syssi](https://github.com/syssi/esphome-yeelight-ceiling-light) | not opened yet |
+| `yeelight-led-ceiling-light` | none — no upstream supports YLXD17YL | — | scaffold, pin map unknown |
 
+The Bedside Lamp 2 is driven by
 [mmakaay/esphome-xiaomi_bslamp2](https://github.com/mmakaay/esphome-xiaomi_bslamp2)
-is vendored for reference. Its front panel protocol informed the component here,
-but no code was taken from it — that project is GPLv3 and this one is not.
+from the submodule: its HAL comes with the behaviour that acts on the front
+panel events, which is the half that matters in daily use.
 
 ## What is my own
 
-`components/yeelight_front_panel` drives the I2C touch panel found on the
-Bedside Lamp 2 and the Staria Floor Lamp. Those lamps come from two different
-upstream projects, so the component belongs to neither. See
+`components/yeelight_front_panel` drives the I2C touch panel on the Staria LED
+Floor Lamp (YLLD01YL), which no upstream project supports. Its `bslamp2` model
+is kept as a verified reference — decoding was confirmed against the real panel,
+and the floor lamp's protocol is the closest analogue. See
 [docs/yeelight-front-panel.md](docs/yeelight-front-panel.md).
 
 `packages/common.yaml` carries what every device here needs: a fallback access
