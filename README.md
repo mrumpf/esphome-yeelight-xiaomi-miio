@@ -23,10 +23,10 @@ repository would not be possible.
 
 | Device | Base config | Upstream |
 | --- | --- | --- |
-| `midesklamppro` | `vendor/xiaomi-smart-led-desk-lamp-pro-esphome/lamp.yaml` | [lucasreiners](https://github.com/lucasreiners/xiaomi-smart-led-desk-lamp-pro-esphome) |
-| `yeelight-light-lamp9` | `vendor/esphome-yeelight-ceiling-light/yeelight_light_lamp9.yaml` | [syssi](https://github.com/syssi/esphome-yeelight-ceiling-light) |
+| `mi-smart-led-desk-lamp-pro` | `vendor/xiaomi-smart-led-desk-lamp-pro-esphome/lamp.yaml` | [lucasreiners](https://github.com/lucasreiners/xiaomi-smart-led-desk-lamp-pro-esphome) |
+| `yeelight-led-pro` | `vendor/esphome-yeelight-ceiling-light/yeelight_light_lamp9.yaml` | [syssi](https://github.com/syssi/esphome-yeelight-ceiling-light) |
 | `yeelight-light-ceiling10` | `vendor/esphome-yeelight-ceiling-light/yeelight_light_ceiling10.yaml` | [syssi](https://github.com/syssi/esphome-yeelight-ceiling-light) |
-| `bedside-lamp` | `packages/hardware/bslamp2.yaml` | own, see below |
+| `mi-bedside-lamp-2` | `packages/hardware/bslamp2.yaml` | own, see below |
 
 [mmakaay/esphome-xiaomi_bslamp2](https://github.com/mmakaay/esphome-xiaomi_bslamp2)
 is vendored for reference. Its front panel protocol informed the component here,
