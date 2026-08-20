@@ -1,8 +1,8 @@
-# Yeelight Staria Bedside/Table Lamp (yeelink.light.lamp9)
+# Yeelight Staria Bedside Lamp Pro (YLCT03YL, yeelink.light.lamp9)
 substitutions:
   name: yeelight-light-lamp9
 
 packages:
-  base: !include vendor/esphome-yeelight-ceiling-light/yeelight_light_lamp9.yaml
+  base: !include vendor/esphome-yeelight-ceiling-light/yeelight_light_lamp9_pro.yaml
   common: !include packages/common.yaml
   local: !include_dir_merge_named local/
