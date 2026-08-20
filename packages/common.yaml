@@ -5,6 +5,11 @@
 # Machine-specific values go in local/ (gitignored).
 
 wifi:
+  # Credentials belong here rather than in a hardware definition: not every
+  # upstream package ships a wifi block, and a device flashed without one comes
+  # up on its fallback AP instead of the network.
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
   # Without a fallback AP a bad credential can only be fixed over UART,
   # which means opening the device.
   ap:
