@@ -1,9 +1,9 @@
-# Xiaomi Mi Smart LED Desk Lamp 1S (MJTD01SYL) - unit 3
+# Xiaomi Mi Smart LED Desk Lamp 1S (MJTD01SYL) - Gästezimmer
 #
 # Not yet opened, not yet flashed. Hardware definition and GPIO map:
 # packages/hardware/desk-lamp-1s.yaml
 substitutions:
-  name: desk-lamp-1s-3
+  name: desk-lamp-1s-gaestezimmer
 
 packages:
   base: !include packages/hardware/desk-lamp-1s.yaml
@@ -12,7 +12,7 @@ packages:
 
 esphome:
   name: ${name}
-  friendly_name: Schreibtischlampe 3
+  friendly_name: Schreibtischlampe Gästezimmer
   min_version: 2024.10.0
 
 api:

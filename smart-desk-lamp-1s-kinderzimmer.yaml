@@ -1,9 +1,9 @@
-# Xiaomi Mi Smart LED Desk Lamp 1S (MJTD01SYL) - unit 2
+# Xiaomi Mi Smart LED Desk Lamp 1S (MJTD01SYL) - Kinderzimmer
 #
 # Not yet opened, not yet flashed. Hardware definition and GPIO map:
 # packages/hardware/desk-lamp-1s.yaml
 substitutions:
-  name: desk-lamp-1s-2
+  name: desk-lamp-1s-kinderzimmer
 
 packages:
   base: !include packages/hardware/desk-lamp-1s.yaml
@@ -12,7 +12,7 @@ packages:
 
 esphome:
   name: ${name}
-  friendly_name: Schreibtischlampe 2
+  friendly_name: Schreibtischlampe Kinderzimmer
   min_version: 2024.10.0
 
 api:
