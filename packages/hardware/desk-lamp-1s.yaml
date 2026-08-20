@@ -1,0 +1,105 @@
+# Xiaomi Mi Smart LED Desk Lamp 1S (MJTD01SYL)
+#
+# ESP-WROOM-32D carrying an ESP32-SOLO-1 die - a single-core part, hence
+# CONFIG_FREERTOS_UNICORE. Tasmota users must flash the tasmota32solo1 build
+# for the same reason; ESPHome handles it through the sdkconfig option below.
+#
+# The GPIO map comes from the Tasmota template for this device:
+# https://templates.blakadder.com/xiaomi_MJTD01SYL.html
+#
+#   GPIO2   PWM cold white        GPIO26  rotary encoder A
+#   GPIO4   PWM warm white        GPIO27  rotary encoder B
+#   GPIO12  output enable         GPIO33  button (in the encoder knob)
+#   GPIO16  switch (unknown)      GPIO17/18  I2C (unknown device)
+#
+# GPIO16 and the I2C bus are left unconfigured: what they are attached to has
+# not been established, and this file only claims what is known.
+#
+# NOT YET FLASHED on any of the three lamps.
+
+esp32:
+  board: esp32doit-devkit-v1
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_FREERTOS_UNICORE: y
+    advanced:
+      ignore_efuse_mac_crc: true
+      ignore_efuse_custom_mac: true
+
+output:
+  # The Tasmota template ships "DimmerRange 30,100", i.e. the LEDs stop
+  # conducting below roughly 30 % duty. min_power reproduces that floor, and
+  # zero_means_zero keeps "off" genuinely off rather than sitting at the floor.
+  - platform: ledc
+    id: output_cold
+    pin: GPIO2
+    frequency: 1000Hz
+    min_power: 0.3
+    zero_means_zero: true
+  - platform: ledc
+    id: output_warm
+    pin: GPIO4
+    frequency: 1000Hz
+    min_power: 0.3
+    zero_means_zero: true
+
+  - platform: gpio
+    id: output_enable
+    pin: GPIO12
+
+light:
+  - platform: cwww
+    id: lamp
+    name: Light
+    cold_white: output_cold
+    warm_white: output_warm
+    cold_white_color_temperature: 6500 K
+    warm_white_color_temperature: 2700 K
+    constant_brightness: true
+    default_transition_length: 300ms
+    on_turn_on:
+      - output.turn_on: output_enable
+    on_turn_off:
+      - output.turn_off: output_enable
+
+sensor:
+  # Turning the knob changes brightness; holding the button while turning
+  # changes colour temperature, which is how the lamp behaves in stock firmware.
+  - platform: rotary_encoder
+    id: knob
+    pin_a: GPIO26
+    pin_b: GPIO27
+    resolution: 2
+    on_value:
+      - if:
+          condition:
+            binary_sensor.is_on: knob_button
+          then:
+            - lambda: |-
+                auto traits = id(lamp).get_traits();
+                auto current = id(lamp).current_values.get_color_temperature();
+                auto next = std::max(traits.get_min_mireds(),
+                            std::min(traits.get_max_mireds(), current + (x * 10)));
+                auto call = id(lamp).turn_on();
+                call.set_color_temperature(next);
+                call.perform();
+          else:
+            - light.dim_relative:
+                id: lamp
+                relative_brightness: !lambda "return x * 0.05;"
+      - lambda: "id(knob).set_value(0);"
+
+binary_sensor:
+  - platform: gpio
+    id: knob_button
+    name: Button
+    pin:
+      number: GPIO33
+      mode: INPUT_PULLUP
+      inverted: true
+    on_click:
+      min_length: 20ms
+      max_length: 500ms
+      then:
+        - light.toggle: lamp
