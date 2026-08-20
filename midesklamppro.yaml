@@ -1,0 +1,14 @@
+# Xiaomi Smart LED Desk Lamp Pro
+#
+# Upstream hardcodes the device name and an OTA password; both are overridden
+# here so the device keeps its name and uses our secret.
+substitutions:
+  name: midesklamppro
+
+esphome:
+  name: midesklamppro
+  friendly_name: Schreibtischlampe
+
+packages:
+  base: !include vendor/xiaomi-smart-led-desk-lamp-pro-esphome/lamp.yaml
+  common: !include packages/common.yaml

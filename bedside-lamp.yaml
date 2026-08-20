@@ -1,0 +1,12 @@
+# Xiaomi Mijia Bedside Lamp 2 (yeelink.light.bslamp2)
+#
+# The hardware definition is ours rather than an upstream submodule: the front
+# panel needs the yeelight_front_panel component in this repository, and the
+# light itself is plain ESPHome platforms.
+substitutions:
+  name: bedside-lamp
+  external_components_source: components
+
+packages:
+  base: !include packages/hardware/bslamp2.yaml
+  common: !include packages/common.yaml

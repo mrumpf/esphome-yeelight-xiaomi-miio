@@ -1,0 +1,21 @@
+# House standards applied on top of every device config.
+#
+# This is layered *over* the upstream-shaped example configs, which stay
+# pristine so they remain contributable to syssi/esphome-yeelight-ceiling-light.
+# Values live in secrets.yaml on each machine; only structure is tracked here.
+
+wifi:
+  # Without a fallback AP a bad credential can only be fixed over UART,
+  # which means opening the device.
+  ap:
+    ssid: "${name} ap"
+
+captive_portal:
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+api:
+  encryption:
+    key: !secret api_encryption_key

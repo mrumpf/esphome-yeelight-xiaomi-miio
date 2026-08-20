@@ -1,0 +1,9 @@
+[submodule "vendor/esphome-yeelight-ceiling-light"]
+	path = vendor/esphome-yeelight-ceiling-light
+	url = https://github.com/mrumpf/esphome-yeelight-ceiling-light.git
+[submodule "vendor/esphome-xiaomi_bslamp2"]
+	path = vendor/esphome-xiaomi_bslamp2
+	url = https://github.com/mrumpf/esphome-xiaomi_bslamp2.git
+[submodule "vendor/xiaomi-smart-led-desk-lamp-pro-esphome"]
+	path = vendor/xiaomi-smart-led-desk-lamp-pro-esphome
+	url = https://github.com/mrumpf/xiaomi-smart-led-desk-lamp-pro-esphome.git

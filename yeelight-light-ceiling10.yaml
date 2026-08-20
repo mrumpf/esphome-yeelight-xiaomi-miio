@@ -1,0 +1,7 @@
+# Yeelight Crystal Pendant Lamp (yeelink.light.ceiling10)
+substitutions:
+  name: yeelight-light-ceiling10
+
+packages:
+  base: !include vendor/esphome-yeelight-ceiling-light/yeelight_light_ceiling10.yaml
+  common: !include packages/common.yaml

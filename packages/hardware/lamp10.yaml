@@ -1,0 +1,86 @@
+# ============================================================================
+# WORK IN PROGRESS -- DO NOT SUBMIT UPSTREAM YET
+#
+# Yeelight Staria Floor Lamp (yeelink.light.lamp10)
+#
+# What is established (static analysis of the original firmware):
+#   - front panel is an I2C slave at address 0x50 on I2C port 1
+#   - messages are 3 bytes; the LED update is [command][state_hi][state_lo]
+#   - the panel raises a GPIO interrupt when an event is waiting
+#   - the lamp is RGB + tunable white (the firmware carries set_rgb, set_hsv
+#     and set_ct_abx), so an rgbw light is the right starting point
+#
+# What is NOT established, and is marked TODO below:
+#   - the SDA / SCL / trigger GPIO numbers
+#   - the LEDC pin map and the master switch pins
+#   - the event message layout
+#
+# Bring the lamp up with `debug: true`, operate the panel, and read the raw
+# messages from the log. See docs/yeelight-front-panel.md.
+# ============================================================================
+
+substitutions:
+  name: yeelight-light-lamp10
+  external_components_source: github://syssi/esphome-yeelight-ceiling-light@main
+  device_description: "Yeelight Staria Floor Lamp (yeelink.light.lamp10)"
+
+esphome:
+  name: ${name}
+  friendly_name: ${name}
+  comment: ${device_description}
+  min_version: 2024.10.0
+
+esp32:
+  board: esp32doit-devkit-v1
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_FREERTOS_UNICORE: y
+    advanced:
+      ignore_efuse_mac_crc: true
+      ignore_efuse_custom_mac: true
+
+external_components:
+  - source: ${external_components_source}
+    refresh: 0s
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+api:
+ota:
+  - platform: esphome
+logger:
+  level: INFO
+
+i2c:
+  - id: front_panel_bus
+    sda: GPIO21 # TODO: probe the board
+    scl: GPIO19 # TODO: probe the board
+    scan: true
+
+yeelight_front_panel:
+  - id: front_panel
+    model: lamp10
+    i2c_id: front_panel_bus
+    trigger_pin: GPIO16 # TODO: probe the board
+    # Leave this on until the event layout is known -- it is what makes the
+    # raw messages show up in the log.
+    debug: true
+
+# The panel LEDs can be driven before the event format is known, because the
+# LED write is the half of the protocol that is already established.
+# Uncomment to sweep the slider illumination and confirm the wiring:
+#
+# interval:
+#   - interval: 1s
+#     then:
+#       - lambda: |-
+#           static uint8_t level = 0;
+#           level = (level + 1) % 11;
+#           id(front_panel)->set_slider_level(level / 10.0f);
+
+# TODO: light outputs. Add the LEDC channels and master switches once the pin
+# map has been probed, then an `rgbw` light in the same shape as
+# yeelight_light_bslamp2.yaml.
