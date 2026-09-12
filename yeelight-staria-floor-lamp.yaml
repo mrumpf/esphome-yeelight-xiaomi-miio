@@ -1,0 +1,82 @@
+# Yeelight Staria LED Floor Lamp (YLLD01YL, yeelink.light.lamp10)
+#
+# Flashed and in use. Hardware definition, pin map and measurements:
+# packages/hardware/lamp10.yaml
+substitutions:
+  name: yeelight-staria-floor-lamp
+  # The lamp10 model exists only in this repository's component so far.
+  external_components_source: components
+
+packages:
+  base: !include packages/hardware/lamp10.yaml
+  common: !include packages/common.yaml
+  local: !include_dir_merge_named local/
+
+esphome:
+  name: ${name}
+  friendly_name: Staria Stehleuchte
+  min_version: 2024.10.0
+
+api:
+
+# DEBUG shows every decoded panel event and light change. For protocol work,
+# switch to VERBOSE (raw i2c transfers) and set debug: true on the panel.
+logger:
+  level: DEBUG
+
+# Front panel behaviour: the power button toggles the light, the slider sets the
+# brightness in 22 steps, the colour button steps through white and colour
+# presets.
+binary_sensor:
+  - platform: yeelight_front_panel
+    name: Power-Taste
+    part: power_button
+    on_press:
+      - light.toggle: lamp
+  - platform: yeelight_front_panel
+    name: Farbtaste
+    part: color_button
+    on_press:
+      - lambda: |-
+          struct Preset { bool white; float kelvin; float r, g, b; };
+          static const Preset PRESETS[] = {
+              {true, 2700, 0, 0, 0},   {true, 4000, 0, 0, 0},   {true, 6500, 0, 0, 0},
+              {false, 0, 1, 0, 0},     {false, 0, 1, 0.5, 0},   {false, 0, 0, 1, 0},
+              {false, 0, 0, 0, 1},     {false, 0, 0.6, 0, 1},
+          };
+          static const size_t COUNT = sizeof(PRESETS) / sizeof(PRESETS[0]);
+          static size_t index = 0;
+          index = (index + 1) % COUNT;
+          const Preset &p = PRESETS[index];
+          auto call = id(lamp).turn_on();
+          if (p.white) {
+            call.set_color_mode(ColorMode::COLD_WARM_WHITE);
+            call.set_color_temperature(1000000.0f / p.kelvin);
+          } else {
+            call.set_color_mode(ColorMode::RGB);
+            call.set_rgb(p.r, p.g, p.b);
+          }
+          call.set_transition_length(300);
+          call.perform();
+  - platform: yeelight_front_panel
+    name: Slider berührt
+    part: slider
+
+sensor:
+  - platform: yeelight_front_panel
+    name: Slider-Stufe
+    on_value:
+      - light.turn_on:
+          id: lamp
+          # All 22 positions, evenly from 1 % at "-" to 100 % at "+". The original
+          # firmware's br_table (0x3F413C34) only has 11 steps and repeats 1 %
+          # for the lowest four positions, which felt uneven on this driver.
+          brightness: !lambda |-
+            const float pos = std::max(0.0f, std::min(x - 1.0f, 21.0f));
+            return 0.01f + 0.99f * pos / 21.0f;
+          transition_length: 200ms
+
+# Reset reason, free heap and loop time - the first things to look at after a
+# crash or a watchdog reboot.
+debug:
+  update_interval: 60s

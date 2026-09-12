@@ -1,22 +1,17 @@
 # ============================================================================
-# WORK IN PROGRESS -- DO NOT SUBMIT UPSTREAM YET
+# Yeelight Staria Floor Lamp (YLLD01YL, yeelink.light.lamp10)
 #
-# Yeelight Staria Floor Lamp (yeelink.light.lamp10)
+# Established from the original firmware and confirmed on the device
+# (2026-09-12):
+#   - front panel: I2C slave 0x50 on SDA=GPIO21 / SCL=GPIO19, interrupt on
+#     GPIO16; events are 6 bytes, see docs/yeelight-front-panel.md
+#   - light: RGB on GPIO13/14/5 (active low) plus warm and cold white on
+#     GPIO12/2, LEDC at 3000 Hz
+#   - the LED driver needs about 6 % duty before anything lights
 #
-# What is established (static analysis of the original firmware):
-#   - front panel is an I2C slave at address 0x50 on I2C port 1
-#   - messages are 3 bytes; the LED update is [command][state_hi][state_lo]
-#   - the panel raises a GPIO interrupt when an event is waiting
-#   - the lamp is RGB + tunable white (the firmware carries set_rgb, set_hsv
-#     and set_ct_abx), so an rgbw light is the right starting point
-#
-# What is NOT established, and is marked TODO below:
-#   - the SDA / SCL / trigger GPIO numbers
-#   - the LEDC pin map and the master switch pins
-#   - the event message layout
-#
-# Bring the lamp up with `debug: true`, operate the panel, and read the raw
-# messages from the log. See docs/yeelight-front-panel.md.
+# Still open:
+#   - what GPIO4 switches (the original firmware toggles it with the light)
+#   - the panel LED write: command byte and slider LED count are unverified
 # ============================================================================
 
 substitutions:
@@ -56,31 +51,114 @@ logger:
 
 i2c:
   - id: front_panel_bus
-    sda: GPIO21 # TODO: probe the board
-    scl: GPIO19 # TODO: probe the board
+    # Verified 2026-09-12: an i2c scan on these pins finds the panel at 0x50.
+    sda: GPIO21
+    scl: GPIO19
     scan: true
 
 yeelight_front_panel:
   - id: front_panel
     model: lamp10
     i2c_id: front_panel_bus
-    trigger_pin: GPIO16 # TODO: probe the board
-    # Leave this on until the event layout is known -- it is what makes the
-    # raw messages show up in the log.
-    debug: true
+    # From the original firmware: touch_isr_init calls
+    # gpio_isr_handler_add(16, isr, (void *)16) at 0x40126B1A.
+    trigger_pin: GPIO16
+    # true logs every raw panel message and a health line every 10 s.
+    debug: false
 
-# The panel LEDs can be driven before the event format is known, because the
-# LED write is the half of the protocol that is already established.
-# Uncomment to sweep the slider illumination and confirm the wiring:
+# Light outputs, from the channel table the original firmware keeps in its
+# initialised data segment (0x3FFBF098): two light units, each channel a
+# ledc_channel_config_t at 12 bit / 3000 Hz / max 0xFFF.
 #
-# interval:
-#   - interval: 1s
-#     then:
-#       - lambda: |-
-#           static uint8_t level = 0;
-#           level = (level + 1) % 11;
-#           id(front_panel)->set_slider_level(level / 10.0f);
+#   unit "color": GPIO13 (LEDC ch 0), GPIO14 (ch 1), GPIO5 (ch 2)
+#   unit white:   GPIO12 (LEDC ch 3), GPIO2  (ch 4)
+#
+# Colours confirmed on the device (2026-09-12), one channel at a time:
+# GPIO13 red, GPIO14 green, GPIO5 blue, GPIO12 warm white, GPIO2 cold white.
+# The same firmware table lists 2700 / 4000 / 5200 / 6500 K presets.
+#
+# GPIO4 is driven high when the lamp turns on and low after the LEDs are off
+# (gpio_set_level wrapper at 0x4012665C). It is not the supply of the colour
+# channels - the RGB LEDs stayed lit with GPIO4 low. What it switches is open;
+# it follows the light here the way the original firmware drives it.
+power_supply:
+  - id: led_power
+    pin: GPIO4
+    enable_time: 20ms
+    keep_on_time: 5s
 
-# TODO: light outputs. Add the LEDC channels and master switches once the pin
-# map has been probed, then an `rgbw` light in the same shape as
-# yeelight_light_bslamp2.yaml.
+# The three colour channels are active low: only they carry a 1 in the last
+# field of their channel entry, and with duty 0 all RGB LEDs lit at full
+# brightness on the device (2026-09-12).
+#
+# The LED driver does not light below about 6 % duty - measured on the device
+# for all five channels (2026-09-12): dark at 4.8 %, glowing at 6.2 - 7.6 %.
+# min_power puts the lowest brightness just above that threshold, so 1 % is
+# faintly lit as on the original firmware; zero_means_zero keeps "off" off.
+# 6 % was too low once gamma correction took the 1 % step to almost nothing;
+# 6.9 % was confirmed as a good lowest step, hence 7 %.
+output:
+  - platform: ledc
+    id: out_gpio13
+    pin: GPIO13
+    frequency: 3000Hz
+    inverted: true
+    min_power: 7%
+    zero_means_zero: true
+    power_supply: led_power
+  - platform: ledc
+    id: out_gpio14
+    pin: GPIO14
+    frequency: 3000Hz
+    inverted: true
+    min_power: 7%
+    zero_means_zero: true
+    power_supply: led_power
+  - platform: ledc
+    id: out_gpio5
+    pin:
+      number: GPIO5
+      ignore_strapping_warning: true
+    frequency: 3000Hz
+    inverted: true
+    min_power: 7%
+    zero_means_zero: true
+    power_supply: led_power
+  - platform: ledc
+    id: out_gpio12
+    pin:
+      number: GPIO12
+      ignore_strapping_warning: true
+    frequency: 3000Hz
+    min_power: 7%
+    zero_means_zero: true
+    power_supply: led_power
+  - platform: ledc
+    id: out_gpio2
+    pin:
+      number: GPIO2
+      ignore_strapping_warning: true
+    frequency: 3000Hz
+    min_power: 7%
+    zero_means_zero: true
+    power_supply: led_power
+
+light:
+  - platform: rgbww
+    id: lamp
+    name: Licht
+    red: out_gpio13
+    green: out_gpio14
+    blue: out_gpio5
+    warm_white: out_gpio12
+    cold_white: out_gpio2
+    warm_white_color_temperature: 2700 K
+    cold_white_color_temperature: 6500 K
+    # The original firmware never mixes colour and white.
+    color_interlock: true
+    # Linear duty looked uneven (large steps low, little change high); the
+    # default 2.8 keeps the lower third close to the floor. 2.0 was confirmed
+    # as even across the slider on the device.
+    gamma_correct: 2.0
+    default_transition_length: 500ms
+    restore_mode: RESTORE_DEFAULT_OFF

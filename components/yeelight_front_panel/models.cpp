@@ -1,5 +1,7 @@
 #include "models.h"
 
+#include <cstring>
+
 namespace esphome {
 namespace yeelight_front_panel {
 
@@ -70,10 +72,71 @@ void Bslamp2Model::encode_leds(uint16_t leds, uint8_t *message) const {
 
 // --- Staria Floor Lamp -----------------------------------------------------
 
-bool Lamp10Model::parse_event(const uint8_t * /*message*/, FrontPanelEvent * /*event*/) const {
-  // Not yet known. Returning false makes the hub log the raw message, which is
-  // how the layout is meant to be established. See docs/yeelight-front-panel.md.
-  return false;
+bool Lamp10Model::parse_event(const uint8_t *message, FrontPanelEvent *event) const {
+  if (message[0] != 0x0A || message[5] != 0x00 || message[4] >= SLIDER_LEVELS)
+    return false;
+
+  // The panel reports its whole state on every read and never clears stale
+  // fields: after a button press the slider still shows its last state and
+  // position. Only a field that changed since the previous message is an event.
+  // Where several changed, the original touch_event_handler's precedence
+  // applies: colour button over power button over slider.
+  //
+  // A button can also drop from touch or held straight to 00 without the 03
+  // ever being read (seen when the panel released the trigger line early).
+  // That drop counts as the release.
+  const auto button_changed = [this, message](uint8_t i) {
+    if (message[i] == this->last_[i])
+      return false;
+    return message[i] != 0x00 || this->last_[i] == 0x01 || this->last_[i] == 0x02;
+  };
+  const bool color = button_changed(2);
+  const bool power = button_changed(1);
+  const bool slider = (message[3] != this->last_[3] || message[4] != this->last_[4]) && message[3] != 0x00;
+  std::memcpy(this->last_, message, EVENT_LENGTH);
+
+  if (color || power) {
+    event->part = color ? FrontPanelPart::COLOR_BUTTON : FrontPanelPart::POWER_BUTTON;
+    switch (color ? message[2] : message[1]) {
+      case 0x01:
+        event->action = FrontPanelAction::TOUCH;
+        return true;
+      case 0x02:
+        // Held. Sent once on the change, then repeated unchanged.
+        event->action = FrontPanelAction::UNKNOWN;
+        return true;
+      case 0x00:
+      case 0x03:
+        event->action = FrontPanelAction::RELEASE;
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  if (slider) {
+    event->part = FrontPanelPart::SLIDER;
+    // 01 on touch and while moving, 02 on release.
+    switch (message[3]) {
+      case 0x01:
+        event->action = FrontPanelAction::TOUCH;
+        break;
+      case 0x02:
+        event->action = FrontPanelAction::RELEASE;
+        break;
+      default:
+        return false;
+    }
+    // Position 0 is the "-" end, next to the power button - already level 1.
+    // The position sent with a release is not where the finger left: captures
+    // show 06, 0B or 0C regardless. Only touches carry a level.
+    if (event->action == FrontPanelAction::TOUCH)
+      event->slider_level = message[4] + 1;
+    return true;
+  }
+
+  // Nothing changed: a repeat, or the idle answer while the line is still low.
+  return true;
 }
 
 void Lamp10Model::encode_leds(uint16_t leds, uint8_t *message) const {

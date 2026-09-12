@@ -43,26 +43,41 @@ class Bslamp2Model : public FrontPanelModel {
 /// on I2C port 1, caching a 16 bit LED state into the last two bytes first --
 /// structurally the same LED update the Bedside Lamp 2 performs.
 ///
-/// The event message layout has NOT been captured yet, so parse_event() always
-/// returns false and the hub logs the raw bytes instead. Run the lamp with
-/// `debug: true` and operate the panel to collect them.
+/// Events are read as 6 bytes, captured on the device on 2026-09-12:
+///
+///   [0]  fixed 0A
+///   [1]  power button:  01 touch, 02 held (repeats), 03 release
+///   [2]  colour button: 01 touch, 02 held (repeats), 03 release
+///   [3]  slider: 01 touch / moving, 02 release
+///   [4]  slider position, 00 at the "-" end (power button) .. 15 at "+"
+///   [5]  always 00
+///
+/// While events are pending the panel holds the trigger line low, and reads
+/// then return all zeros once it has nothing more to report.
 class Lamp10Model : public FrontPanelModel {
  public:
   static const uint8_t ADDRESS = 0x50;
   static const uint8_t MESSAGE_LENGTH = 3;
+  static const uint8_t EVENT_LENGTH = 6;
   /// Unverified: taken from the number of slider LEDs visible on the device.
   static const uint8_t SLIDER_LEDS = 10;
-  /// Unverified: assumed identical to the other lamps in the family.
+  /// Verified: positions 00..15 were all observed.
   static const uint8_t SLIDER_LEVELS = 22;
   /// Unverified: the command byte that precedes the 16 bit LED state.
   static const uint8_t LED_COMMAND = 0x02;
 
   const char *name() const override { return "lamp10"; }
   uint8_t message_length() const override { return MESSAGE_LENGTH; }
+  uint8_t event_length() const override { return EVENT_LENGTH; }
   uint8_t slider_led_count() const override { return SLIDER_LEDS; }
   uint8_t slider_level_count() const override { return SLIDER_LEVELS; }
   bool parse_event(const uint8_t *message, FrontPanelEvent *event) const override;
   void encode_leds(uint16_t leds, uint8_t *message) const override;
+
+ protected:
+  /// The panel reports its whole state on every read, so events are derived
+  /// from what changed since the previous message.
+  mutable uint8_t last_[EVENT_LENGTH]{};
 };
 
 const FrontPanelModel *get_model(Model model);
