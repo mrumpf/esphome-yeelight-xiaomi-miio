@@ -1,7 +1,7 @@
+from esphome import pins
 import esphome.codegen as cg
 from esphome.components import i2c
 import esphome.config_validation as cv
-from esphome import pins
 from esphome.const import CONF_ADDRESS, CONF_ID, CONF_MODEL
 
 CODEOWNERS = ["@syssi"]

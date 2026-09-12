@@ -17,8 +17,7 @@ void YeelightFrontPanel::setup() {
   this->model_ = get_model(this->model_id_);
 
   this->trigger_pin_->setup();
-  this->trigger_pin_->attach_interrupt(FrontPanelTriggerStore::gpio_intr, &this->store_,
-                                       gpio::INTERRUPT_FALLING_EDGE);
+  this->trigger_pin_->attach_interrupt(FrontPanelTriggerStore::gpio_intr, &this->store_, gpio::INTERRUPT_FALLING_EDGE);
   ESP_LOGD(TAG, "Trigger pin level after setup: %d", this->trigger_pin_->digital_read());
 
   if (this->debug_) {
@@ -26,8 +25,8 @@ void YeelightFrontPanel::setup() {
     // even when no interrupt ever fires.
     this->set_interval("health", 10000, [this]() {
       ESP_LOGD(TAG, "Health: trigger level=%d, interrupts=%u, handled=%u, leds=0x%04X%s",
-               this->trigger_pin_->digital_read(), this->store_.event_count, this->last_event_count_,
-               this->led_state_, this->leds_dirty_ ? " (pending)" : "");
+               this->trigger_pin_->digital_read(), this->store_.event_count, this->last_event_count_, this->led_state_,
+               this->leds_dirty_ ? " (pending)" : "");
     });
   }
 }

@@ -3,11 +3,7 @@ from esphome.components import sensor
 import esphome.config_validation as cv
 from esphome.const import STATE_CLASS_MEASUREMENT
 
-from .. import (
-    CONF_YEELIGHT_FRONT_PANEL_ID,
-    YeelightFrontPanel,
-    yeelight_front_panel_ns,
-)
+from .. import CONF_YEELIGHT_FRONT_PANEL_ID, YeelightFrontPanel, yeelight_front_panel_ns
 
 DEPENDENCIES = ["yeelight_front_panel"]
 
