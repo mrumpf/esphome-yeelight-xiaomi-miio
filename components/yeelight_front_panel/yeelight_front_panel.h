@@ -74,6 +74,9 @@ class FrontPanelModel {
   /// Number of bytes in every message exchanged with this panel.
   virtual uint8_t message_length() const = 0;
 
+  /// Number of bytes read for an event. Defaults to message_length().
+  virtual uint8_t event_length() const { return this->message_length(); }
+
   /// Number of LEDs illuminating the slider.
   virtual uint8_t slider_led_count() const = 0;
 
@@ -151,6 +154,8 @@ class YeelightFrontPanel : public Component, public i2c::I2CDevice {
   bool debug_{false};
 
   uint32_t last_event_count_{0};
+  uint32_t last_read_ms_{0};
+  bool last_trigger_level_{true};
   uint16_t led_state_{LED_NONE};
   bool leds_dirty_{true};
 

@@ -2,11 +2,7 @@ import esphome.codegen as cg
 from esphome.components import binary_sensor
 import esphome.config_validation as cv
 
-from .. import (
-    CONF_YEELIGHT_FRONT_PANEL_ID,
-    YeelightFrontPanel,
-    yeelight_front_panel_ns,
-)
+from .. import CONF_YEELIGHT_FRONT_PANEL_ID, YeelightFrontPanel, yeelight_front_panel_ns
 
 DEPENDENCIES = ["yeelight_front_panel"]
 

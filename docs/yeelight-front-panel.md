@@ -48,24 +48,51 @@ project. The implementation here is independent of theirs.
 
 ### `lamp10` — Yeelight Staria Floor Lamp
 
-Address `0x50`, 3 byte messages.
+Address `0x50`, SDA GPIO21, SCL GPIO19, trigger GPIO16. LED messages are
+3 bytes, events are read as 6 bytes. 22 slider levels.
 
-Established by static analysis of the original firmware: the front panel driver
-writes three bytes to slave `0x50` on I²C port 1, and caches a 16 bit LED state
-into the last two bytes immediately before the write — structurally the same
-LED update the Bedside Lamp 2 performs. So the LED message is
-`<command>:<state_hi>:<state_lo>`.
+The LED message comes from static analysis of the original firmware: the front
+panel driver writes three bytes to slave `0x50` on I²C port 1, and caches a
+16 bit LED state into the last two bytes immediately before the write. So the
+LED message is `<command>:<state_hi>:<state_lo>`. The command byte and the
+slider LED count are still unverified.
 
-**The event message layout is not known yet.** `parse_event()` returns false
-for this model, which makes the component log every message it receives:
+The event layout was captured on the device (2026-09-12). No request message is
+needed; a plain 6 byte read returns:
 
-```
-[W][yeelight_front_panel]: Unrecognised message: 0A.00.02 (3)
-```
+| Byte | Meaning |
+|---|---|
+| 0 | fixed `0A` |
+| 1 | power button (bottom): `01` touch, `02` held (repeats), `03` release |
+| 2 | colour button (top): same as the power button |
+| 3 | slider: `01` touch and while moving, `02` release |
+| 4 | slider position, `00` at the "−" end .. `15` at the "+" end |
+| 5 | always `00` |
 
-Operate the panel and collect those lines to establish the format. The slider
-LED count and level count in `models.h` are placeholders until then, as is the
-LED command byte.
+This panel behaves differently from the Bedside Lamp 2 in three ways that the
+model has to handle:
+
+* **It reports state, not events.** Every read returns the whole panel state,
+  and stale fields are never cleared — after a button press the slider still
+  shows its last state and position. `parse_event()` therefore only emits an
+  event for a field that changed since the previous message, with the original
+  firmware's precedence: colour button over power button over slider.
+* **The trigger line can stay low.** A falling-edge interrupt alone loses
+  events, so the hub keeps reading every 50 ms while the line is low. Reads
+  with nothing pending return `0A:00:00:00:00:00`.
+* **The position sent with a release is meaningless** (`06`, `0B` or `0C`
+  regardless of where the finger left). Only touches carry a slider level.
+* **A button release can go unreported.** The panel was seen dropping a held
+  button straight to `00` and releasing the trigger line without a `03` ever
+  being read. A drop from `01`/`02` to `00` therefore counts as the release,
+  and the hub reads once more when the trigger line goes back high.
+
+A 3 byte read, which the original analysis suggested, returns the first three
+bytes only and loses the position.
+
+Not handled yet: a slider touch registered briefly next to a button press. The
+original firmware suppresses touches right after a button action
+(`touch_act_delay`, "ignore the touch action").
 
 ## Adding a model
 
