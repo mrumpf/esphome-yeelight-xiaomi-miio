@@ -8,6 +8,7 @@
 #   - light: RGB on GPIO13/14/5 (active low) plus warm and cold white on
 #     GPIO12/2, LEDC at 3000 Hz
 #   - the LED driver needs about 6 % duty before anything lights
+#   - GPIO33 enables the 12 V rail of all LED drivers and must be driven high
 #
 # Still open:
 #   - what GPIO4 switches (the original firmware toggles it with the light)
@@ -86,6 +87,18 @@ power_supply:
     pin: GPIO4
     enable_time: 20ms
     keep_on_time: 5s
+
+# GPIO33 enables the 12 V rail of all LED drivers (switched by Q1). The original
+# firmware drives it high once at start-up and never lowers it
+# (0x40126C44: gpio_config + gpio_set_level(33, 1)). Left floating, the rail
+# only came up by chance - after reassembling the lamp Q1 stayed off, with 12 V
+# on its input and 0 V on its output.
+switch:
+  - platform: gpio
+    id: led_rail_enable
+    pin: GPIO33
+    restore_mode: ALWAYS_ON
+    internal: true
 
 # The three colour channels are active low: only they carry a 1 in the last
 # field of their channel entry, and with duty 0 all RGB LEDs lit at full
