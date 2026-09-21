@@ -1,7 +1,7 @@
 # Xiaomi Mi Smart LED Desk Lamp 1S (MJTD01SYL) - Gästezimmer
 #
-# Not yet opened, not yet flashed. Hardware definition and GPIO map:
-# packages/hardware/desk-lamp-1s.yaml
+# Opened and wired to UART, original firmware read out, not yet flashed.
+# Hardware definition and GPIO map: packages/hardware/desk-lamp-1s.yaml
 substitutions:
   name: desk-lamp-1s-gaestezimmer
 
