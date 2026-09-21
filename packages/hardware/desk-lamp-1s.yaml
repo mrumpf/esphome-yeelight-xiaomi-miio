@@ -77,8 +77,14 @@ sensor:
             binary_sensor.is_on: knob_button
           then:
             - lambda: |-
+                // Step from remote_values, the target of the running
+                // transition, not from current_values. Resetting the counter
+                // below fires on_value a second time with x = 0, and
+                // current_values still holds the pre-change value for the
+                // length of the transition - that second pass would write it
+                // back and cancel every adjustment.
                 auto traits = id(lamp).get_traits();
-                auto current = id(lamp).current_values.get_color_temperature();
+                auto current = id(lamp).remote_values.get_color_temperature();
                 auto next = std::max(traits.get_min_mireds(),
                             std::min(traits.get_max_mireds(), current + (x * 10)));
                 auto call = id(lamp).turn_on();
